@@ -34,6 +34,7 @@ interface ToolsProps {
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 600'%3E%3Crect fill='%23f5f5f4' width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23a8a29e'%3E%E5%9C%96%E7%89%87%E7%94%9F%E6%88%90%E5%A4%B1%E6%95%88%3C/text%3E%3C/svg%3E";
 
 // WMO Weather Codes Interpretation
 const getWeatherDesc = (code: number): { desc: string; advice: string } => {
@@ -211,9 +212,9 @@ export const Tools: React.FC<ToolsProps> = ({
             recipe = "食譜生成失敗";
         }
 
-        // 2. Generate Image (Heavier, wrap in separate try-catch so recipe is saved even if image fails)
+        // 2. Generate Image (Heavier, might timeout on Vercel or be blocked)
         try {
-            const imagePrompt = `A professional, high-quality, delicious food photography close-up shot of ${newIdea.name} in a cafe setting. ${newIdea.notes}`;
+            const imagePrompt = `A delicious food photo of ${newIdea.name}`;
             const imageResp = await ai.models.generateContent({
                 model: 'gemini-2.5-flash-image',
                 contents: { parts: [{ text: imagePrompt }] },
@@ -231,7 +232,7 @@ export const Tools: React.FC<ToolsProps> = ({
             }
         } catch (imageError) {
             console.error("Image generation failed", imageError);
-            // We just proceed without an image
+            // Will use empty string, forcing placeholder
         }
         
         // Save result
@@ -241,7 +242,7 @@ export const Tools: React.FC<ToolsProps> = ({
             stage: 'Idea', 
             notes: newIdea.notes,
             recipe: recipe,
-            imageUrl: imageUrl
+            imageUrl: imageUrl // If empty, card shows placeholder
         }, ...prev]);
 
         setNewIdea({ name: '', notes: '' });
@@ -1206,9 +1207,15 @@ export const Tools: React.FC<ToolsProps> = ({
                               <div className="space-y-3">
                                   {ideas?.filter(i => i.stage === stage).map(idea => (
                                       <div key={idea.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-100">
-                                          {idea.imageUrl && (
+                                          {/* Image with fallback */}
+                                          {idea.imageUrl ? (
                                               <img src={idea.imageUrl} alt={idea.name} className="w-full h-32 object-cover rounded-lg mb-3" />
+                                          ) : (
+                                              <div className="w-full h-32 bg-stone-100 rounded-lg mb-3 flex items-center justify-center">
+                                                   <img src={PLACEHOLDER_IMAGE} alt="Placeholder" className="w-full h-full object-cover opacity-50"/>
+                                              </div>
                                           )}
+                                          
                                           <div className="font-bold text-stone-800">{idea.name}</div>
                                           <p className="text-xs text-stone-500 mt-2">{idea.notes}</p>
                                           {idea.recipe && (

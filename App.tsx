@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tools } from './components/Tools';
 import { Live } from './components/Live';
 import { 
@@ -33,20 +33,43 @@ const App: React.FC = () => {
       { id: '12', name: "冷凍藍莓", quantity: 2, unit: "kg", status: "Warning", lastUpdated: "2023-10-15" },
   ]);
 
+  // -- Persistent States (LocalStorage) --
+  
   // Social Media State
-  const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [posts, setPosts] = useState<SocialPost[]>(() => {
+    const saved = localStorage.getItem('woosh_posts');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => { localStorage.setItem('woosh_posts', JSON.stringify(posts)); }, [posts]);
 
   // Product Dev State
-  const [ideas, setIdeas] = useState<ProductIdea[]>([]);
+  const [ideas, setIdeas] = useState<ProductIdea[]>(() => {
+    const saved = localStorage.getItem('woosh_ideas');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => { localStorage.setItem('woosh_ideas', JSON.stringify(ideas)); }, [ideas]);
 
-  // Feedback State - Cleared
-  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  // Feedback State
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(() => {
+    const saved = localStorage.getItem('woosh_feedbacks');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => { localStorage.setItem('woosh_feedbacks', JSON.stringify(feedbacks)); }, [feedbacks]);
 
   // KPI State
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goals, setGoals] = useState<Goal[]>(() => {
+    const saved = localStorage.getItem('woosh_goals');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => { localStorage.setItem('woosh_goals', JSON.stringify(goals)); }, [goals]);
 
   // ESG State
-  const [esgItems, setEsgItems] = useState<ESGItem[]>([]);
+  const [esgItems, setEsgItems] = useState<ESGItem[]>(() => {
+    const saved = localStorage.getItem('woosh_esg');
+    return saved ? JSON.parse(saved) : [];
+  });
+  useEffect(() => { localStorage.setItem('woosh_esg', JSON.stringify(esgItems)); }, [esgItems]);
+
 
   const allTabs = [
     { id: 'daily', label: '今日重點', icon: Sun, guest: false },
